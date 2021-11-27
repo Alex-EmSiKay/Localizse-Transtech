@@ -1,0 +1,16 @@
+:root {
+    --baseFontSize: 14px
+}
+
+.textarea {
+    border:1px solid black;
+    padding: 3px;
+  }
+
+#math {
+    font-size: var(--baseFontSize) / 1.21
+}
+
+.entry {
+    font-weight:bold;
+}
