@@ -1,16 +1,20 @@
-:root {
-    --baseFontSize: 14px
+.entry {
+    font-weight:bold;
+}
+
+.katex {
+    font-size: 1em;
+}
+.original {
+    background-color: rgb(187, 241, 237);
 }
 
 .textarea {
+    background-color: white;
     border:1px solid black;
-    padding: 3px;
-  }
-
-#math {
-    font-size: var(--baseFontSize) / 1.21
+    padding: 5px;
 }
 
-.entry {
-    font-weight:bold;
+.version {
+    background-color:rgb(241, 241, 241)
 }
