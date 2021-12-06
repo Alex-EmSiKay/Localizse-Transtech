@@ -1,0 +1,36 @@
+{% extends "transtech/layout.html" %}
+{% load static %}
+{% block scripts %}
+<!-- The loading of KaTeX is deferred to speed up page rendering -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"
+    integrity="sha384-z1fJDqw8ZApjGO3/unPWUPsIymfsJmyrDVWC8Tv/a1HeOtGmkwNd/7xUS0Xcnvsx"
+    crossorigin="anonymous"></script>
+
+<!-- To automatically render math in text elements, include the auto-render extension: -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js"
+    integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR"
+    crossorigin="anonymous"></script>
+<script src="{% static 'transtech/new-scripts.js'%}"></script>
+{% endblock %}
+{% block page %}
+<div class="container editor">
+    <div class="row new p-1">
+        <h4>Enter new content</h4>
+    </div>
+    <div class="row new p-2">
+        <div class="col">
+            <h5>Editor</h5>
+            <div class="input textarea" contenteditable>
+            </div>
+        </div>
+    </div>
+    <div class="row new p-2">
+        <div class="col">
+            <h5>Render</h5>
+            <div class="col render"></div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

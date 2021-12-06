@@ -1,0 +1,52 @@
+{% extends "transtech/layout.html" %}
+{% load static %}
+{% block scripts %}
+<!-- The loading of KaTeX is deferred to speed up page rendering -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"
+    integrity="sha384-z1fJDqw8ZApjGO3/unPWUPsIymfsJmyrDVWC8Tv/a1HeOtGmkwNd/7xUS0Xcnvsx"
+    crossorigin="anonymous"></script>
+
+<!-- To automatically render math in text elements, include the auto-render extension: -->
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js"
+    integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR"
+    crossorigin="anonymous"></script>
+<script src="{% static 'transtech/rev-scripts.js'%}"></script>
+{% endblock %}
+{% block page %}
+<div class="container editor">
+    <div class="row original p-1">
+        <h4>Original</h4>
+    </div>
+    <div class="row original p-2">
+        <div class="col info">
+            <h5>Text</h5>
+            <p>
+                Some words and phrases that contain a mathematical expression like $$5+x+6x^2$$ or
+                $\log_5(2y)$
+            </p>
+        </div>
+        <div class="col">
+            <h5>Expressions</h5>
+            <ol class="expressions"></ol>
+        </div>
+    </div>
+    <div class="row version p-1">
+        <h4>Version</h4>
+    </div>
+    <div class="row version p-2">
+        <div class="col">
+            <h5>Editor</h5>
+            <div class="input textarea" contenteditable>
+            </div>
+        </div>
+    </div>
+    <div class="row version p-2">
+        <div class="col">
+            <h5>Render</h5>
+            <div class="col render"></div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

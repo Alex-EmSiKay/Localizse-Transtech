@@ -1,0 +1,141 @@
+{% extends "transtech/layout.html" %}
+{% block page %}
+<div class="container-fluid p-1">
+    <div class="row justify-content-left">
+        <div class="col">
+            <div class="row p-1">
+                <div class="col-lg-2 align-self-start">
+                    <h4>Personal</h4>
+                </div>
+                <div class="col-auto">
+                    <table class="table table-striped">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Email:</th>
+                                <td>
+                                    {{user_email}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Name:</th>
+                                <td>
+                                    TODO A name
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+                <div class="col-auto"><button class="btn btn-primary btn-sm">Edit</button></div>
+            </div>
+            <div class="row p-1">
+                <div class="col-lg-2 align-self-start">
+                    <h4>Professional</h4>
+                </div>
+                <div class="col-auto">
+
+                    <table class="table table-striped">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Position:</th>
+                                <td>
+                                    TODO ie Reviewer
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Status:</th>
+                                <td>
+                                    TODO ie Active
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row p-1">
+                <div class="col-lg-2 align-self-start">
+                    <h4>Languages</h4>
+                </div>
+                <div class="col-auto">
+
+                    <table class="table table-striped">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Primary:</th>
+                                <td>
+                                    TODO English
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Secondary:</th>
+                                <td>
+                                    TODO e.g French, Spanish
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-auto"><button class="btn btn-primary btn-sm">Edit</button></div>
+            </div>
+
+            <div class="row p-1">
+                <div class="col-lg-2 align-self-start">
+                    <h4>Financial</h4>
+                    <a href="#">More financial details</a>
+                </div>
+                <div class="col-auto">
+                    <table class="table table-striped">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Next weekly payment:</th>
+                                <td>
+                                    TODO ie $$
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">All time:</th>
+                                <td>
+                                    TODO ie $$
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid p-1">
+    <div class="row p-1">
+        <h4>TODO Weekly Accuracy</h4>
+    </div>
+    <div class="row p-1">
+        <div class="col-auto">
+            <p>TODO e.g.</p>
+            <p>3 out of 500 checked tasks were flagged.</p>
+            <p>This gives and accuracy rate of 99.8%</p>
+            <p>Well done!</p>
+        </div>
+    </div>
+</div>
+<div class="container-fluid p-1">
+    <div class="row p-1">
+        <h4>TODO Work log</h4>
+    </div>
+    <div class="row p-1">
+        <div class="col-auto">
+            <table class="table table-striped">
+                <thead>
+                    <th scope="col">Date/Time</th>
+                    <th scope="col">Item</th>
+                    <th scope="col">Price</th>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

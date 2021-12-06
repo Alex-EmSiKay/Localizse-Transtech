@@ -1,0 +1,27 @@
+{% extends "transtech/layout.html" %}
+{% block auth %}<a class="nav-link" href="{% url 'register' %}">Register</a>{% endblock %}
+{% block page %}
+<div class="container login">
+    <form action="{% url 'login' %}" method="post">
+        {% csrf_token %}
+        <div class="form-group row p-1">
+            <label for="email" class="col-lg-1 col-form-label">Email</label>
+            <div class="col">
+                <input type="text" name="email" class="form-control">
+            </div>
+        </div>
+        <div class="form-group row p-1">
+            <label for="password" class="col-lg-1 col-form-label">Password</label>
+            <div class="col">
+                <input type="password" name="password" class="form-control">
+            </div>
+        </div>
+        <div class="form-group row p-1 justify-content-center">
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "transtech/layout.html" %}
+{% block page %}
+<div class="container">
+    <div class="row p-1">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Subject</th>
+                    <th scope="col">Message</th>
+                    <th scope="col">Sent</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a href="#">Something</a></td>
+                    <td class="msg-preview">A really long message that takes up too much space</td>
+                    <td>A date and time</td>
+                </tr>
+                <tr class="urd">
+                    <td><a href="#">Something unread</a></td>
+                    <td class="msg-preview">Another really long message that takes up too much space</td>
+                    <td>Some date and time</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
