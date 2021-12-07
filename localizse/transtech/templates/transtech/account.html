@@ -39,7 +39,7 @@
                             <tr>
                                 <th scope="row">Position:</th>
                                 <td>
-                                    TODO ie Reviewer
+                                    {% if request.user.is_staff %}Admin{% else %}{{request.user.groups.all.0.name}}{% endif %}
                                 </td>
                             </tr>
                             <tr>

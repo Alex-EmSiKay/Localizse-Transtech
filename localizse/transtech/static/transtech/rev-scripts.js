@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const info_field = element.querySelector(".info p");
         const input_field = element.querySelector(".input");
         const render_field = element.querySelector(".render");
-        var exps = info_field.innerText;
+        var exps = input_field.innerText;
         renderMathInElement(element.querySelector(".info"), {
             // customised options
             // • auto-render specific keys, e.g.:

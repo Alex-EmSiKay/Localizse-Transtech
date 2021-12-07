@@ -1,11 +1,13 @@
+import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
+from django.http import JsonResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import User
+from .models import TechContent, TechContentVersion, User
 
 
 @login_required
@@ -88,12 +90,47 @@ def register(request):
 
 
 @login_required
+def save(request):
+
+    # Saving new content must be via POST
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+
+    data = json.loads(request.body)
+    newTC = TechContent.objects.create()
+    newTCV = TechContentVersion(
+        content_id=newTC, language=data.get("language"), content=data.get("content")
+    )
+    newTCV.save()
+    return JsonResponse({"message": "Content saved successfully."}, status=201)
+
+
+@login_required
+def work_switch(request):
+    return HttpResponseRedirect(reverse("index"))
+
+
+@login_required
 def work(request, type):
-    if not type:
-        pass
-    elif type in [
+    if type in [
         "create",
         "review",
         "audit",
     ]:
-        return render(request, f"transtech/{type}.html")
+        if type == "create":
+            render(request, f"transtech/{type}.html")
+        else:
+            content = TechContent.objects.get(pk=4)
+            original = TechContentVersion.objects.get(
+                content_id=content, version_type="OR"
+            )
+            translation = TechContentVersion.objects.get(
+                content_id=content, language="FR"
+            )
+            return render(
+                request,
+                f"transtech/{type}.html",
+                {"original": original, "translation": translation},
+            )
+    else:
+        return HttpResponseRedirect(reverse("index"))
