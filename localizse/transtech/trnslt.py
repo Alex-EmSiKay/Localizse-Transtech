@@ -29,7 +29,9 @@ def translate(source, target, text):
 
 def tech_translate(source, target, text):
     factored = text
-    snip_map = [(m, str(uuid4())) for m in set(re.findall(r"\$.+?\$", factored))]
+    snip_map = [
+        (m, str(uuid4())) for m in set(re.findall(r"\${1,2}.+?\${1,2}", factored))
+    ]
 
     for snip in snip_map:
         factored = factored.replace(snip[0], snip[1])
