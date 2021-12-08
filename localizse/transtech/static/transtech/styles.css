@@ -41,3 +41,7 @@ td {
 .urd {
     background-color: rgb(187, 241, 237);
 }
+
+.message {
+    display: none;
+}

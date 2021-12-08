@@ -13,8 +13,10 @@ class TechContent(models.Model):
 
 class TechContentVersion(models.Model):
     LANGS = (
-        ("EN", "English"),
-        ("FR", "French"),
+        ("en", "English"),
+        ("fr", "French"),
+        ("pt", "Portuguese"),
+        ("zh", "Chinese"),
     )
     V_TYPES = (
         ("OR", "Original"),

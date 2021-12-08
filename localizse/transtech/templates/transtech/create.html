@@ -14,7 +14,7 @@
 {% endblock %}
 {% block page %}
 <div class="container editor">
-    <div class="row new p-1">
+    <div class="row new p-2">
         <h4>Enter new content</h4>
     </div>
     <div class="row new p-2">
@@ -30,10 +30,11 @@
             <div class="col render"></div>
         </div>
     </div>
-    <div class="row new p-2">
+    <div class="row new feedback p-2">
         <div class="col-auto">
-            <button class="btn btn-primary save">Save</button>
+            <button class="btn btn-primary m-1 save">Save</button>
         </div>
+        <div class="col-auto message"></div>
     </div>
 </div>
 {% endblock %}
