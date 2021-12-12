@@ -13,9 +13,12 @@
 <script src="{% static 'transtech/rev-scripts.js'%}"></script>
 {% endblock %}
 {% block page %}
-<div class="container editor">
+<div class="container editor mt-3">
     <div class="row original p-2">
-        <h4>Original</h4>
+        <div class="d-flex justify-content-between">
+            <h4>Original</h4>
+            <div class="fw-bold">ID: <span id="pk">{{original.content_id.pk}}</span></div>
+        </div>
     </div>
     <div class="row original p-2">
         <div class="col info">
@@ -47,6 +50,11 @@
         </div>
 
     </div>
-
+    <div class="row version p-2">
+        <div class="col">
+            <button class="save-btn btn btn-primary w-100">Save</button>
+            <a class="skip-btn btn btn-secondary my-1 w-100" href="review">Skip</a>
+        </div>
+    </div>
 </div>
 {% endblock %}

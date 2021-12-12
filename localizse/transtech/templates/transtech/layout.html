@@ -16,20 +16,22 @@
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
         crossorigin="anonymous"></script>
     <script src="{% static 'transtech/csrf-cookie.js'%}"></script>
+    <script src="{% static 'transtech/gen-scripts.js'%}"></script>
     {% block scripts %}
     {% endblock %}
 </head>
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="{% url 'index' %}">Localizse</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
-            aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
-            <div>
-                <ul class="navbar-nav">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'index' %}">Localizse</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+                aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+
+                <ul class="navbar-nav me-auto">
                     {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'account' %}">Account</a>
@@ -55,11 +57,58 @@
                     </li>
                     {% endif %}
                 </ul>
+                <div class="container-fluid">
+                    <div class="row align-items-center justify-content-end">
+                        <div class="col-md-auto">
+                            <span class="fw-bold">Active Languages</span>
+                        </div>
+                        <div class=col-md-auto>
+                            <div class="row">
+                                <div class="col-sm-auto px-3 pt-2">
+                                    {% if user.primary.count > 1 %}
+                                    <div class="lang-select">
+                                        <label for="primary"><span class="fst-italic">Select primary: </span></label>
+                                        <select class="form-select w-auto" id="primary">
+                                            {% for lang in user.primary.all %}
+                                            <option value="{{lang.code}}"
+                                                {% if lang == user.active_pri %}selected{% endif %}>{{lang.name}}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    {% else %}<span class="fst-italic">Primary</span><br>
+                                    {{user.primary.get.name}}
+                                    {% endif %}
+                                </div>
+                                <div class="col-sm-auto px-3 pt-2">
+                                    <div class="lang-select">
+                                        <label for="secondary"><span class="fst-italic">Select secondary:
+                                            </span></label>
+                                        <select class="form-select w-auto" id="secondary">
+                                            {% for lang in user.primary.all %}
+                                            <option value="{{lang.code}}"
+                                                {% if lang == user.active_pri %}selected{% endif %}>{{lang.name}}
+                                            </option>
+                                            {% endfor %}
+                                            {% for lang in user.secondary.all %}
+                                            <option value="{{lang.code}}"
+                                                {% if lang == user.active_sec %}selected{% endif %}>{{lang.name}}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-auto align-self-end px-3 pt-2">
+                            <button class="btn btn-primary" id="lang-btn">Save changes</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-
     </nav>
-    This is for crowd sourced or contract-based localisation of short-form technical content
     {% block page %}
     {% endblock %}
 </body>

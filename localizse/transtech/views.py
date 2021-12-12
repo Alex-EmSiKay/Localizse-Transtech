@@ -9,13 +9,21 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import TechContent, TechContentVersion, User
+from .models import Language, TechContent, TechContentVersion, User
 from .trnslt import tech_translate
 
 
 @login_required
 def account(request):
-    return render(request, "transtech/account.html", {"user_email": request.user.email})
+    return render(
+        request,
+        "transtech/account.html",
+        {
+            "user_email": request.user.email,
+            "primary_list": [lang.name for lang in request.user.primary.all()],
+            "secondary_list": [lang.name for lang in request.user.secondary.all()],
+        },
+    )
 
 
 def index(request):
@@ -40,6 +48,14 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
+            if not user.active_pri:
+                user.active_pri = user.primary.all()[0]
+                user.active_sec = [
+                    lang
+                    for lang in user.primary.all().union(user.secondary.all())
+                    if lang != user.active_pri
+                ][0]
+                user.save()
             return HttpResponseRedirect(reverse("index"))
         else:
             return render(request, "transtech/login.html")
@@ -101,28 +117,31 @@ def save(request):
 
     data = json.loads(request.body)
     lang = data.get("language")
-    choices = [c[0] for c in TechContentVersion._meta.get_field("language").choices]
+    choices = [c.code for c in Language.objects.all()]
     if lang not in choices:
         return JsonResponse({"error": "not a valid language"}, status=400)
     cont = data.get("content")
     if data.get("content_id"):
-        oldTC = TechContent.objects.get(pk=data.get("content_id"))
-        p_key = oldTC.pk
-        oldOriginal = TechContentVersion.objects.get(content_id=oldTC, language=lang)
+        p_key = data.get("content_id")
+        oldTC = TechContent.objects.get(pk=p_key)
+        oldOriginal = TechContentVersion.objects.get(
+            content_id=oldTC, language=Language.objects.get(code=lang)
+        )
         oldOriginal.content = cont
         oldOriginal.save()
-        for tr_lang in [c for c in choices if c != lang]:
-            oldTranslation = TechContentVersion.objects.get(
-                content_id=oldTC, language=tr_lang
-            )
-            oldTranslation.content = tech_translate(lang, tr_lang, cont)
-            oldTranslation.save()
+        if oldOriginal.version_type == "OR":
+            for tr_lang in [c for c in choices if c != lang]:
+                oldTranslation = TechContentVersion.objects.get(
+                    content_id=oldTC, language=Language.objects.get(code=tr_lang)
+                )
+                oldTranslation.content = tech_translate(lang, tr_lang, cont)
+                oldTranslation.save()
     else:
         newTC = TechContent.objects.create()
         p_key = newTC.pk
         newOriginal = TechContentVersion(
             content_id=newTC,
-            language=lang,
+            language=Language.objects.get(code=lang),
             content=cont,
             version_type="OR",
             status="O",
@@ -131,7 +150,7 @@ def save(request):
         for tr_lang in [c for c in choices if c != lang]:
             newTranslation = TechContentVersion(
                 content_id=newTC,
-                language=tr_lang,
+                language=Language.objects.get(code=tr_lang),
                 content=tech_translate(lang, tr_lang, cont),
                 version_type="TR",
                 status="C",
@@ -140,6 +159,18 @@ def save(request):
     return JsonResponse(
         {"message": "Content saved successfully.", "content_id": p_key}, status=201
     )
+
+
+@login_required
+def set_lang(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+
+    data = json.loads(request.body)
+    request.user.active_pri = Language.objects.get(code=data.get("primary"))
+    request.user.active_sec = Language.objects.get(code=data.get("secondary"))
+    request.user.save()
+    return JsonResponse({"message": "Active languages saved successfully."}, status=201)
 
 
 @login_required
@@ -157,12 +188,13 @@ def work(request, type):
         if type == "create":
             return render(request, f"transtech/{type}.html")
         else:
-            content = choice(TechContent.objects.all())
-            original = TechContentVersion.objects.get(
-                content_id=content, version_type="OR"
+            original = choice(
+                TechContentVersion.objects.filter(
+                    version_type="OR", language=request.user.active_sec
+                )
             )
             translation = TechContentVersion.objects.get(
-                content_id=content, language="pt"
+                content_id=original.content_id, language=request.user.active_pri
             )
             return render(
                 request,

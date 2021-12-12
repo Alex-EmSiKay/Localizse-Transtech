@@ -1,26 +1,27 @@
 body {
-    margin: 10px
+    margin: 10px;
 }
 
 .entry {
-    font-weight:bold;
+    font-weight: bold;
 }
 
 .katex {
     font-size: 1em;
 }
 .original {
-    background-color: rgb(187, 241, 237);
+    background-color: #0dcaf0;
 }
 
 .textarea {
     background-color: white;
-    border:1px solid black;
+    border: 1px solid black;
     padding: 5px;
 }
 
-.version, .new {
-    background-color:rgb(241, 241, 241)
+.version,
+.new {
+    background-color: rgb(241, 241, 241);
 }
 
 tbody th {
@@ -42,6 +43,11 @@ td {
     background-color: rgb(187, 241, 237);
 }
 
-.message {
+.message,
+#lang-btn {
     display: none;
+}
+
+.lang-selector label {
+    display: block;
 }

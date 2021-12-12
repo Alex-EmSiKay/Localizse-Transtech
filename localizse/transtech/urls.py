@@ -12,4 +12,5 @@ urlpatterns = [
     path("work/<str:type>", views.work, name="work_by_type"),
     path("account", views.account, name="account"),
     path("finance", views.finance, name="finance"),
+    path("setlang", views.set_lang, name="set_lang"),
 ]

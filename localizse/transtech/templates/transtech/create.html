@@ -13,14 +13,14 @@
 <script src="{% static 'transtech/new-scripts.js'%}"></script>
 {% endblock %}
 {% block page %}
-<div class="container editor">
+<div class="container editor mt-3">
     <div class="row new p-2">
         <h4>Enter new content</h4>
     </div>
     <div class="row new p-2">
         <div class="col">
             <h5>Editor</h5>
-            <div class="input textarea" contenteditable>
+            <div class="input textarea" contenteditable spellcheck="spellcheck" lang="{{user.active_pri.code}}">
             </div>
         </div>
     </div>
