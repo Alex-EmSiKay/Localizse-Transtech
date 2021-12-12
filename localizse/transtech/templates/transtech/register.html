@@ -2,12 +2,52 @@
 {% block auth %}<a class="nav-link" href="{% url 'login' %}">Login</a>{% endblock %}
 {% block page %}
 <div class="container login">
+    <h4 class="p-1">Register</h4>
+    {{message}}
     <form action="{% url 'register' %}" method="post">
         {% csrf_token %}
+        <div class="form-group row p-1">
+            <label for="name" class="col-lg-2 col-form-label">Name</label>
+            <div class="col">
+                <input type="text" name="name" class="form-control">
+            </div>
+        </div>
         <div class="form-group row p-1">
             <label for="email" class="col-lg-2 col-form-label">Email</label>
             <div class="col">
                 <input type="text" name="email" class="form-control">
+            </div>
+        </div>
+        <div class="row p-1">
+            <div class="row justify-content-center">
+                <div class="col-auto p-2 bg-info">
+                    <p>A <strong>primary language</strong> is a language for which you are native or near-native.</p>
+                    <p>A <strong>secondary language</strong> is any other language you understand which isn't a primary
+                        language.</p>
+                    <p>You must pick at least one primary language and at least two languages overall.</p>
+                    <p>Hold CTRL/CMD to pick multiple languages.</p>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row p-1">
+            <label for="primary" class="col-lg-2 col-form-label">Primary language(s)</label>
+            <div class="col">
+                <select class="form-select" name="primary" multiple>
+                    {% for lang in languages %}
+                    <option value="{{lang.code}}">{{lang.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group row p-1">
+            <label for="secondary" class="col-lg-2 col-form-label">Secondary language(s)</label>
+            <div class="col">
+                <select class="form-select" name="secondary" multiple>
+                    {% for lang in languages %}
+                    <option value="{{lang.code}}">{{lang.name}}</option>
+                    {% endfor %}
+                </select>
             </div>
         </div>
         <div class="form-group row p-1">
@@ -27,7 +67,6 @@
                 <button type="submit" class="btn btn-primary">Submit</button>
             </div>
         </div>
-
     </form>
 </div>
 {% endblock %}

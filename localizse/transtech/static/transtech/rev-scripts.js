@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         exps = exps.replace(/\$+.*?\$+/, `~${i}~`);
         i++;
     }
-    input_field.innerText = exps;
+    input_field.innerText = exps.trim();
 
     input_field.addEventListener('input', (e) => {
         render_field.innerHTML = e.currentTarget.innerHTML;
@@ -75,6 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (save_btn.innerText === 'Edit') {
             input_field.parentElement.parentElement.style.display = 'block';
             save_btn.innerText = 'Save';
+            if (approve_btn !== null) {
+                approve_btn.style.display = 'none';
+            }
             input_field.focus();
         } else {
             save_btn.disabled = true;
@@ -88,11 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: { 'X-CSRFToken': csrftoken },
                 body: JSON.stringify({
-                    language: document.querySelectorAll(
-                        '.lang-select select'
-                    )[0].value,
                     content: new_exps,
                     content_id: pk,
+                    type: location.pathname.replace('/work/', ''),
                 }),
             })
                 .then((response) => response.json())
@@ -109,4 +110,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         }
     });
+    const approve_btn = document.querySelector('.approve-btn');
+    if (approve_btn !== null) {
+        approve_btn.addEventListener('click', () => {
+            approve_btn.style.display = 'none';
+            save_btn.innerText = 'Save';
+            save_btn.dispatchEvent(new Event('click'));
+        });
+    }
 });

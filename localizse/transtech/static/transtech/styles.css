@@ -20,7 +20,8 @@ body {
 }
 
 .version,
-.new {
+.new,
+.error {
     background-color: rgb(241, 241, 241);
 }
 

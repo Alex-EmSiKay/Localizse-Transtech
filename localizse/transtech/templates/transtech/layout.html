@@ -16,7 +16,9 @@
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
         crossorigin="anonymous"></script>
     <script src="{% static 'transtech/csrf-cookie.js'%}"></script>
+    {% if user.is_authenticated%}
     <script src="{% static 'transtech/gen-scripts.js'%}"></script>
+    {% endif %}
     {% block scripts %}
     {% endblock %}
 </head>
@@ -36,6 +38,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'account' %}">Account</a>
                     </li>
+                    {% if user.is_staff %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="workDropDown" data-bs-toggle="dropdown"
                             aria-haspopup="true" aria-expanded="false">Work</a>
@@ -45,6 +48,11 @@
                             <a class="dropdown-item" href="{% url 'work_by_type' "audit" %}">Audit</a>
                         </div>
                     </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'work' %}">Work</a>
+                    </li>
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'messages' %}">Messages</a>
                     </li>
@@ -57,6 +65,7 @@
                     </li>
                     {% endif %}
                 </ul>
+                {% if user.is_authenticated %}
                 <div class="container-fluid">
                     <div class="row align-items-center justify-content-end">
                         <div class="col-md-auto">
@@ -85,11 +94,13 @@
                                         <label for="secondary"><span class="fst-italic">Select secondary:
                                             </span></label>
                                         <select class="form-select w-auto" id="secondary">
+                                            {% if user.primary.count > 1 %}
                                             {% for lang in user.primary.all %}
                                             <option value="{{lang.code}}"
                                                 {% if lang == user.active_pri %}selected{% endif %}>{{lang.name}}
                                             </option>
                                             {% endfor %}
+                                            {% endif %}
                                             {% for lang in user.secondary.all %}
                                             <option value="{{lang.code}}"
                                                 {% if lang == user.active_sec %}selected{% endif %}>{{lang.name}}
@@ -106,6 +117,7 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
             </div>
         </div>
     </nav>

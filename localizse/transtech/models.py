@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.deletion import CASCADE, SET_NULL
 from django.db.models.fields.reverse_related import ManyToManyRel
+from django.utils import timezone
 
 
 # Create your models here.
@@ -44,6 +45,7 @@ class TechContentVersion(models.Model):
     STATUSES = (
         ("C", "Created"),
         ("R", "Reviewed"),
+        ("A", "Audited"),
         ("O", "Original version"),
     )
     content_id = models.ForeignKey(
@@ -56,3 +58,18 @@ class TechContentVersion(models.Model):
 
     def __str__(self):
         return f"TechContent {self.content_id.pk} - {self.language.name}"
+
+
+class Item(models.Model):
+    WORK_TYPES = (
+        ("RE", "Review"),
+        ("AU", "Audit"),
+    )
+    user = models.ForeignKey(User, on_delete=CASCADE, related_name="items")
+    content = models.ForeignKey(
+        TechContentVersion, null=True, on_delete=SET_NULL, related_name="reviews"
+    )
+    initial = models.TextField()
+    final = models.TextField()
+    work_type = models.CharField(max_length=2, choices=WORK_TYPES)
+    done = models.DateTimeField(default=timezone.now)

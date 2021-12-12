@@ -19,14 +19,14 @@
                             <tr>
                                 <th scope="row">Name:</th>
                                 <td>
-                                    TODO A name
+                                    {{user.first_name}}
                                 </td>
                             </tr>
                         </tbody>
                     </table>
 
                 </div>
-                <div class="col-auto"><button class="btn btn-primary btn-sm">Edit</button></div>
+                <div class="col-auto"><button class="btn btn-primary btn-sm">TODO Edit</button></div>
             </div>
             <div class="row p-1">
                 <div class="col-lg-2 align-self-start">
@@ -45,7 +45,7 @@
                             <tr>
                                 <th scope="row">Status:</th>
                                 <td>
-                                    TODO ie Active
+                                    {% if user.is_active %}Active{% else %}Locked out{% endif %}
                                 </td>
                             </tr>
                         </tbody>
@@ -75,13 +75,13 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="col-auto"><button class="btn btn-primary btn-sm">Edit</button></div>
+                <div class="col-auto"><button class="btn btn-primary btn-sm">TODO Edit</button></div>
             </div>
 
             <div class="row p-1">
                 <div class="col-lg-2 align-self-start">
                     <h4>Financial</h4>
-                    <a href="#">More financial details</a>
+                    <a href="#">TODO More financial details</a>
                 </div>
                 <div class="col-auto">
                     <table class="table table-striped">
@@ -108,33 +108,55 @@
 </div>
 <div class="container-fluid p-1">
     <div class="row p-1">
-        <h4>TODO Weekly Accuracy</h4>
+        <h4>Weekly Accuracy</h4>
     </div>
     <div class="row p-1">
         <div class="col-auto">
-            <p>TODO e.g.</p>
-            <p>3 out of 500 checked tasks were flagged.</p>
-            <p>This gives and accuracy rate of 99.8%</p>
+            <p>{{num_flagged}} out of {{num_audits}} audited items were flagged.</p>
+            <p>This gives and accuracy rate of {{accuracy | stringformat:".2d"}}%</p>
+            {% if accuracy >= 0.75 %}
             <p>Well done!</p>
+            {% endif %}
         </div>
     </div>
 </div>
 <div class="container-fluid p-1">
     <div class="row p-1">
-        <h4>TODO Work log</h4>
+        <h4>Work log</h4>
     </div>
     <div class="row p-1">
         <div class="col-auto">
-            <table class="table table-striped">
-                <thead>
+            <table class="table table-striped table-bordered text-center">
+                <thead class=table-primary>
                     <th scope="col">Date/Time</th>
-                    <th scope="col">Item</th>
+                    <th scope="col">Content ID</th>
+                    <th scope="col">Language</th>
+                    <th scope="col">Work Type</th>
                     <th scope="col">Price</th>
                 </thead>
                 <tbody>
-
+                    {% for item in work_log %}
+                    <tr>
+                        <td>
+                            {{item.done}}
+                        </td>
+                        <td>
+                            {{item.content.content_id.pk}}
+                        </td>
+                        <td>
+                            {{item.content.language}}
+                        </td>
+                        <td>
+                            {% if item.work_type == "RE" %}Review{% endif %}{% if item.work_type == "AU" %}Audit{% endif %}
+                        </td>
+                        <td>
+                            {% if item.work_type == "RE" %}15c{% endif %}{% if item.work_type == "AU" %}10c{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
+            Latest 20 items shown. <a href="{% url 'log' %}">Full log</a>
         </div>
     </div>
 </div>

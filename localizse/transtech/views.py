@@ -3,18 +3,27 @@ from random import choice
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
+from django.db.models import Q, F
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import Language, TechContent, TechContentVersion, User
+from .models import Language, TechContent, TechContentVersion, User, Item
 from .trnslt import tech_translate
 
 
 @login_required
 def account(request):
+    user_items = Item.objects.filter(user=request.user)
+    audits = Item.objects.filter(
+        work_type="AU",
+        content__in=[i.content for i in user_items.filter(work_type="RE")],
+    )
+    num_audits = audits.count()
+    num_flagged = audits.filter(~Q(final=F("initial"))).count()
     return render(
         request,
         "transtech/account.html",
@@ -22,6 +31,10 @@ def account(request):
             "user_email": request.user.email,
             "primary_list": [lang.name for lang in request.user.primary.all()],
             "secondary_list": [lang.name for lang in request.user.secondary.all()],
+            "work_log": user_items.order_by("-done")[:20],
+            "num_audits": num_audits,
+            "num_flagged": num_flagged,
+            "accuracy": (num_audits - num_flagged) / num_audits * 100,
         },
     )
 
@@ -38,6 +51,17 @@ def finance(request):
     pass
 
 
+@login_required
+def log(request):
+    return render(
+        request,
+        "transtech/log.html",
+        {
+            "work_log": Item.objects.filter(user=request.user).order_by("-done"),
+        },
+    )
+
+
 def login_view(request):
     if request.method == "POST":
 
@@ -48,14 +72,7 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
-            if not user.active_pri:
-                user.active_pri = user.primary.all()[0]
-                user.active_sec = [
-                    lang
-                    for lang in user.primary.all().union(user.secondary.all())
-                    if lang != user.active_pri
-                ][0]
-                user.save()
+            set_langs(user)
             return HttpResponseRedirect(reverse("index"))
         else:
             return render(request, "transtech/login.html")
@@ -80,32 +97,55 @@ def register(request):
     if request.method == "POST":
         username = request.POST["email"]
         email = request.POST["email"]
+        name = request.POST["name"]
+        primary = request.POST.getlist("primary")
+        secondary = request.POST.getlist("secondary")
 
         # Ensure password matches confirmation
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
         if password != confirmation:
             return render(
-                request, "transtech/register.html", {"message": "Passwords must match."}
+                request,
+                "transtech/register.html",
+                {
+                    "message": "Passwords must match.",
+                    "languages": Language.objects.all(),
+                },
             )
 
         # Attempt to create new user
         try:
-            user = User.objects.create_user(username, email, password)
+            user = User.objects.create_user(username, email, password, first_name=name)
             user.save()
         except IntegrityError:
             return render(
                 request,
                 "transtech/register.html",
-                {"message": "email already registered."},
+                {
+                    "message": "email already registered.",
+                    "languages": Language.objects.all(),
+                },
             )
+        for l in Language.objects.filter(code__in=primary):
+            user.primary.add(l.pk)
+        for l in Language.objects.filter(code__in=secondary):
+            user.secondary.add(l.pk)
+        user.groups.add(Group.objects.get(name="Reviewer"))
         login(request, user)
+        set_langs(user)
         return HttpResponseRedirect(reverse("index"))
     else:
         if request.user.is_authenticated:
             return HttpResponseRedirect(reverse("index"))
         else:
-            return render(request, "transtech/register.html")
+            return render(
+                request,
+                "transtech/register.html",
+                {
+                    "languages": Language.objects.all(),
+                },
+            )
 
 
 @login_required
@@ -116,17 +156,17 @@ def save(request):
         return JsonResponse({"error": "POST request required."}, status=400)
 
     data = json.loads(request.body)
-    lang = data.get("language")
-    choices = [c.code for c in Language.objects.all()]
+    lang = request.user.active_pri
+    choices = [c for c in Language.objects.all()]
     if lang not in choices:
         return JsonResponse({"error": "not a valid language"}, status=400)
     cont = data.get("content")
     if data.get("content_id"):
         p_key = data.get("content_id")
         oldTC = TechContent.objects.get(pk=p_key)
-        oldOriginal = TechContentVersion.objects.get(
-            content_id=oldTC, language=Language.objects.get(code=lang)
-        )
+        oldOriginal = TechContentVersion.objects.get(content_id=oldTC, language=lang)
+        init = oldOriginal.content
+        fin = cont
         oldOriginal.content = cont
         oldOriginal.save()
         if oldOriginal.version_type == "OR":
@@ -136,12 +176,34 @@ def save(request):
                 )
                 oldTranslation.content = tech_translate(lang, tr_lang, cont)
                 oldTranslation.save()
+        if data.get("type"):
+            if oldOriginal.status == "R":
+                Item.objects.create(
+                    user=request.user,
+                    content=oldOriginal,
+                    initial=init,
+                    final=fin,
+                    work_type="AU",
+                )
+                oldOriginal.status = "A"
+                oldOriginal.save()
+            if oldOriginal.status == "C":
+                Item.objects.create(
+                    user=request.user,
+                    content=oldOriginal,
+                    initial=init,
+                    final=fin,
+                    work_type="RE",
+                )
+                oldOriginal.status = "R"
+                oldOriginal.save()
+
     else:
         newTC = TechContent.objects.create()
         p_key = newTC.pk
         newOriginal = TechContentVersion(
             content_id=newTC,
-            language=Language.objects.get(code=lang),
+            language=lang,
             content=cont,
             version_type="OR",
             status="O",
@@ -150,8 +212,8 @@ def save(request):
         for tr_lang in [c for c in choices if c != lang]:
             newTranslation = TechContentVersion(
                 content_id=newTC,
-                language=Language.objects.get(code=tr_lang),
-                content=tech_translate(lang, tr_lang, cont),
+                language=tr_lang,
+                content=tech_translate(lang.code, tr_lang.code, cont),
                 version_type="TR",
                 status="C",
             )
@@ -175,31 +237,75 @@ def set_lang(request):
 
 @login_required
 def work_switch(request):
-    return HttpResponseRedirect(reverse("index"))
+    if request.user.groups.all()[0] == Group.objects.get(name="Creator"):
+        return HttpResponseRedirect(reverse("work_by_type", args=["create"]))
+    if request.user.groups.all()[0] == Group.objects.get(name="Reviewer"):
+        return HttpResponseRedirect(reverse("work_by_type", args=["review"]))
+    if request.user.groups.all()[0] == Group.objects.get(name="Auditor"):
+        return HttpResponseRedirect(reverse("work_by_type", args=["audit"]))
 
 
 @login_required
-def work(request, type):
-    if type in [
+def work(request, w_type):
+
+    if w_type in [
         "create",
         "review",
         "audit",
     ]:
-        if type == "create":
-            return render(request, f"transtech/{type}.html")
+        if not request.user.is_staff:
+            group = request.user.groups.all()[0]
+            if not (
+                (w_type == "create" and group.name == "Creator")
+                or (w_type == "review" and group.name == "Reviewer")
+                or (w_type == "audit" and group.name == "Auditor")
+            ):
+                return HttpResponseRedirect(reverse("work"))
+        if w_type == "create":
+            return render(request, f"transtech/{w_type}.html")
         else:
-            original = choice(
-                TechContentVersion.objects.filter(
-                    version_type="OR", language=request.user.active_sec
+            translations = [
+                c.content_id
+                for c in TechContentVersion.objects.filter(
+                    language=request.user.active_pri,
+                    status=(
+                        "C"
+                        if w_type == "review"
+                        else "R"
+                        if w_type == "audit"
+                        else None
+                    ),
                 )
-            )
+            ]
+            try:
+                original = choice(
+                    TechContentVersion.objects.filter(
+                        version_type="OR",
+                        language=request.user.active_sec,
+                        content_id__in=translations,
+                    )
+                )
+            except IndexError:
+                return render(request, "transtech/workerror.html", {"type": w_type})
+
             translation = TechContentVersion.objects.get(
                 content_id=original.content_id, language=request.user.active_pri
             )
             return render(
                 request,
-                f"transtech/{type}.html",
+                f"transtech/{w_type}.html",
                 {"original": original, "translation": translation},
             )
     else:
         return HttpResponseRedirect(reverse("index"))
+
+
+def set_langs(user):
+    if not user.active_pri:
+        user.active_pri = user.primary.all()[0]
+        user.active_sec = [
+            lang
+            for lang in user.primary.all().union(user.secondary.all())
+            if lang != user.active_pri
+        ][0]
+        user.save()

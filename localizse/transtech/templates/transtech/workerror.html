@@ -1,0 +1,15 @@
+{% extends "transtech/layout.html" %}
+{% block page %}
+<div class="container editor mt-3">
+    <div class="row error p-2">
+        <h4>Nothing found</h4>
+        <p>There are no more items to {{type}}!</p>
+        <p>Please try again later.</p>
+    </div>
+    <div class="row error p-2">
+        <div class="col">
+            <a class="btn btn-primary my-1 w-100" href="">Check again</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
