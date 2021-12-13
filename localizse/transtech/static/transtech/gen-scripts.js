@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const opts = selectors[1].querySelectorAll('option');
         selectors[0].addEventListener('change', () => {
             opts.forEach((opt) => {
-                opt.disabled = selectors[0].value === opt.value && true;
+                opt.disabled = selectors[0].value === opt.value;
             });
             opts.forEach((opt) => {
                 if (opt.disabled && opt.selected) {

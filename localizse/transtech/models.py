@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.deletion import CASCADE, SET_NULL
+from django.db.models.fields import related
 from django.db.models.fields.reverse_related import ManyToManyRel
 from django.utils import timezone
 
@@ -73,3 +74,12 @@ class Item(models.Model):
     final = models.TextField()
     work_type = models.CharField(max_length=2, choices=WORK_TYPES)
     done = models.DateTimeField(default=timezone.now)
+
+
+class Report(models.Model):
+    reporter = models.ForeignKey(User, on_delete=CASCADE, related_name="reports")
+    description = models.TextField()
+    version = models.ForeignKey(
+        TechContentVersion, on_delete=CASCADE, related_name="reports"
+    )
+    reported_at = models.DateTimeField(default=timezone.now)

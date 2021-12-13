@@ -1,4 +1,4 @@
-{% extends "transtech/layout.html" %}
+{% extends "transtech/report.html" %}
 {% load static %}
 {% block scripts %}
 <!-- The loading of KaTeX is deferred to speed up page rendering -->
@@ -17,7 +17,9 @@
     <div class="row original p-2">
         <div class="d-flex justify-content-between">
             <h4>Original</h4>
-            <div class="fw-bold">ID: <span id="pk">{{original.content_id.pk}}</span></div>
+            <div class="fw-bold">ID:<span id="pk">{{original.content_id.pk}}</span><button
+                    class="btn btn-light ms-2 report-btn" data-bs-toggle="modal"
+                    data-bs-target="#reportModal">Report</button></div>
         </div>
     </div>
     <div class="row original p-2">

@@ -1,4 +1,8 @@
 {% extends "transtech/layout.html" %}
+{% load static %}
+{% block scripts %}
+<script src="{% static 'transtech/acc-scripts.js'%}"></script>
+{% endblock %}
 {% block page %}
 <div class="container-fluid p-1">
     <div class="row justify-content-left">
@@ -13,20 +17,23 @@
                             <tr>
                                 <th scope="row">Email:</th>
                                 <td>
-                                    {{user_email}}
+                                    <span id="current-email">{{user.email}}</span>
+                                    <input type="text" name="email" class="form-control" id="new-email"
+                                        value="{{user.email}}">
                                 </td>
                             </tr>
                             <tr>
                                 <th scope="row">Name:</th>
                                 <td>
-                                    {{user.first_name}}
+                                    <span id="current-name">{{user.first_name}}</span>
+                                    <input type="text" name="first_name" class="form-control" id="new-name"
+                                        value="{{user.first_name}}">
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-
                 </div>
-                <div class="col-auto"><button class="btn btn-primary btn-sm">TODO Edit</button></div>
+                <div class="col-auto"><button class="btn btn-primary btn-sm edit-btn">Edit</button></div>
             </div>
             <div class="row p-1">
                 <div class="col-lg-2 align-self-start">
@@ -63,25 +70,39 @@
                             <tr>
                                 <th scope="row">Primary:</th>
                                 <td>
-                                    {{primary_list|join:", "}}
+                                    <span>{{primary_list|join:", "}}</span>
+                                    <select class="form-select lang-update" name="primary" multiple>
+                                        {% for lang in languages %}
+                                        <option value="{{lang.code}}"
+                                            {% if lang.name in primary_list %}selected{% endif %}>{{lang.name}}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
                                 </td>
                             </tr>
                             <tr>
                                 <th scope="row">Secondary:</th>
                                 <td>
-                                    {{secondary_list|join:", "}}
+                                    <span>{{secondary_list|join:", "}}</span>
+                                    <select class="form-select lang-update" name="secondary" multiple>
+                                        {% for lang in languages %}
+                                        <option value="{{lang.code}}"
+                                            {% if lang.name in secondary_list %}selected{% endif %}>{{lang.name}}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <div class="col-auto"><button class="btn btn-primary btn-sm">TODO Edit</button></div>
+                <div class="col-auto"><button class="btn btn-primary btn-sm edit-btn">Edit</button></div>
             </div>
 
             <div class="row p-1">
                 <div class="col-lg-2 align-self-start">
                     <h4>Financial</h4>
-                    <a href="#">TODO More financial details</a>
+                    <p>Payments are made each Thursday</p>
                 </div>
                 <div class="col-auto">
                     <table class="table table-striped">
@@ -89,13 +110,13 @@
                             <tr>
                                 <th scope="row">Next weekly payment:</th>
                                 <td>
-                                    TODO ie $$
+                                    ${{weekly|stringformat:".2f"}}
                                 </td>
                             </tr>
                             <tr>
                                 <th scope="row">This financial year:</th>
                                 <td>
-                                    TODO ie $$
+                                    ${{FY|stringformat:".2f"}}
                                 </td>
                             </tr>
                         </tbody>
@@ -114,7 +135,7 @@
         <div class="col-auto">
             <p>{{num_flagged}} out of {{num_audits}} audited items were flagged.</p>
             <p>This gives and accuracy rate of {{accuracy | stringformat:".2d"}}%</p>
-            {% if accuracy >= 0.75 %}
+            {% if accuracy >= 75 %}
             <p>Well done!</p>
             {% endif %}
         </div>

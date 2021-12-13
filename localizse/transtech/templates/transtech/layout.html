@@ -91,6 +91,7 @@
                                 </div>
                                 <div class="col-sm-auto px-3 pt-2">
                                     <div class="lang-select">
+                                        {% if user.primary.count > 1 or user.secondary.count > 1%}
                                         <label for="secondary"><span class="fst-italic">Select secondary:
                                             </span></label>
                                         <select class="form-select w-auto" id="secondary">
@@ -107,6 +108,9 @@
                                             </option>
                                             {% endfor %}
                                         </select>
+                                        {% else %}<span class="fst-italic">Secondary</span><br>
+                                        {{user.secondary.get.name}}
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -122,6 +126,8 @@
         </div>
     </nav>
     {% block page %}
+    {% endblock %}
+    {% block repmod %}
     {% endblock %}
 </body>
 

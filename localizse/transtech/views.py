@@ -1,5 +1,6 @@
 import json
 from random import choice
+from datetime import datetime, timedelta
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -11,7 +12,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import Language, TechContent, TechContentVersion, User, Item
+from .models import Language, TechContent, TechContentVersion, User, Item, Report
 from .trnslt import tech_translate
 
 
@@ -24,17 +25,29 @@ def account(request):
     )
     num_audits = audits.count()
     num_flagged = audits.filter(~Q(final=F("initial"))).count()
+    last_thursday = datetime.today() + timedelta(
+        days=3 - datetime.today().weekday(), weeks=-1
+    )
+    weeks_items = Item.objects.filter(user=request.user, done__gt=last_thursday)
+    SOFY = datetime(datetime.today().year, 7, 1)
+    FYs_items = Item.objects.filter(user=request.user, done__gt=SOFY)
     return render(
         request,
         "transtech/account.html",
         {
-            "user_email": request.user.email,
             "primary_list": [lang.name for lang in request.user.primary.all()],
             "secondary_list": [lang.name for lang in request.user.secondary.all()],
             "work_log": user_items.order_by("-done")[:20],
             "num_audits": num_audits,
             "num_flagged": num_flagged,
-            "accuracy": (num_audits - num_flagged) / num_audits * 100,
+            "accuracy": (num_audits - num_flagged) / num_audits * 100
+            if num_audits != 0
+            else 100,
+            "languages": Language.objects.all(),
+            "weekly": weeks_items.filter(work_type="RE").count() * 0.15
+            + weeks_items.filter(work_type="AU").count() * 0.1,
+            "FY": FYs_items.filter(work_type="RE").count() * 0.15
+            + FYs_items.filter(work_type="AU").count() * 0.1,
         },
     )
 
@@ -72,7 +85,8 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
-            set_langs(user)
+            if not user.active_pri:
+                set_langs(user)
             return HttpResponseRedirect(reverse("index"))
         else:
             return render(request, "transtech/login.html")
@@ -146,6 +160,20 @@ def register(request):
                     "languages": Language.objects.all(),
                 },
             )
+
+
+@login_required
+def report(request):
+    # Saving new content must be via POST
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    else:
+        Report.objects.create(
+            reporter=request.user,
+            description=request.POST["description"],
+            version=TechContentVersion.objects.get(pk=request.POST["version_id"]),
+        )
+        return HttpResponseRedirect(reverse("work"))
 
 
 @login_required
@@ -236,7 +264,30 @@ def set_lang(request):
 
 
 @login_required
+def update(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    data = json.loads(request.body)
+    for field, val in data.get("info").items():
+        if field == "primary":
+            request.user.primary.set(
+                [l.pk for l in Language.objects.filter(code__in=val)]
+            )
+        elif field == "secondary":
+            request.user.secondary.set(
+                [l.pk for l in Language.objects.filter(code__in=val)]
+            )
+        else:
+            setattr(request.user, field, val)
+    request.user.save()
+    set_langs(request.user)
+    return JsonResponse({"message": "Account updated successfully."}, status=201)
+
+
+@login_required
 def work_switch(request):
+    if request.user.is_staff:
+        return HttpResponseRedirect(reverse("index"))
     if request.user.groups.all()[0] == Group.objects.get(name="Creator"):
         return HttpResponseRedirect(reverse("work_by_type", args=["create"]))
     if request.user.groups.all()[0] == Group.objects.get(name="Reviewer"):
@@ -279,11 +330,15 @@ def work(request, w_type):
             ]
             try:
                 original = choice(
-                    TechContentVersion.objects.filter(
-                        version_type="OR",
-                        language=request.user.active_sec,
-                        content_id__in=translations,
-                    )
+                    [
+                        v
+                        for v in TechContentVersion.objects.filter(
+                            version_type="OR",
+                            language=request.user.active_sec,
+                            content_id__in=translations,
+                        )
+                        if v.reports.all().count() == 0
+                    ]
                 )
             except IndexError:
                 return render(request, "transtech/workerror.html", {"type": w_type})
@@ -301,11 +356,10 @@ def work(request, w_type):
 
 
 def set_langs(user):
-    if not user.active_pri:
-        user.active_pri = user.primary.all()[0]
-        user.active_sec = [
-            lang
-            for lang in user.primary.all().union(user.secondary.all())
-            if lang != user.active_pri
-        ][0]
-        user.save()
+    user.active_pri = user.primary.all()[0]
+    user.active_sec = [
+        lang
+        for lang in user.primary.all().union(user.secondary.all())
+        if lang != user.active_pri
+    ][0]
+    user.save()

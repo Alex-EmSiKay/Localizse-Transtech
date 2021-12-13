@@ -45,7 +45,10 @@ td {
 }
 
 .message,
-#lang-btn {
+.lang-update,
+#lang-btn,
+#new-email,
+#new-name {
     display: none;
 }
 
