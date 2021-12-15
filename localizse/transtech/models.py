@@ -19,13 +19,17 @@ class Language(models.Model):
 
 class User(AbstractUser):
     primary = models.ManyToManyField(Language, related_name="primary_users")
-    secondary = models.ManyToManyField(Language, related_name="secondary_users")
+    secondary = models.ManyToManyField(
+        Language, blank=True, related_name="secondary_users"
+    )
     active_pri = models.ForeignKey(
         Language, null=True, on_delete=SET_NULL, related_name="primary_users_active"
     )
     active_sec = models.ForeignKey(
         Language, null=True, on_delete=SET_NULL, related_name="secondary_users_active"
     )
+    locked = models.DateTimeField(blank=True, null=True)
+    offer = models.UUIDField(blank=True, null=True)
 
 
 class TechContent(models.Model):
@@ -83,3 +87,13 @@ class Report(models.Model):
         TechContentVersion, on_delete=CASCADE, related_name="reports"
     )
     reported_at = models.DateTimeField(default=timezone.now)
+
+
+class Message(models.Model):
+    recipient = models.ForeignKey(
+        User, null=True, on_delete=CASCADE, related_name="messages"
+    )
+    subject = models.CharField(max_length=64)
+    content = models.TextField()
+    sent_at = models.DateTimeField(default=timezone.now)
+    read = models.BooleanField(default=False)

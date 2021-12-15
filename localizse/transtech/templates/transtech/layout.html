@@ -27,9 +27,16 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'index' %}">Localizse</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
-                aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler position-relative" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false"
+                aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
+                {% if show_badge %}
+                <span
+                    class="position-absolute top-0 start-100 translate-middle p-2 bg-info border border-light rounded-circle">
+                    <span class="visually-hidden">New alerts</span>
+                </span>
+                {% endif %}
             </button>
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
 
@@ -54,8 +61,20 @@
                     </li>
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'messages' %}">Messages</a>
+                        <a class="nav-link position-relative" href="{% url 'messages' %}">Messages
+                            {% if show_badge %}
+                            <span class="position-absolute top-0 end-0 p-2 bg-info border border-light rounded-circle">
+                                <span class="visually-hidden">New alerts</span>
+                            </span>
+                            {% endif %}
+                        </a>
+
                     </li>
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'users' %}">Users</a>
+                    </li>
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                     </li>

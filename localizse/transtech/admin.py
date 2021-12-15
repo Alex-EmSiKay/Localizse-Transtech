@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import Language, Report, TechContent, TechContentVersion, User, Item
+from .models import (
+    Language,
+    Report,
+    TechContent,
+    TechContentVersion,
+    User,
+    Item,
+    Message,
+)
 
 # from django.contrib.auth.admin import UserAdmin
 
@@ -10,3 +18,4 @@ admin.site.register(TechContentVersion)
 admin.site.register(Language)
 admin.site.register(Item)
 admin.site.register(Report)
+admin.site.register(Message)

@@ -52,7 +52,7 @@
                             <tr>
                                 <th scope="row">Status:</th>
                                 <td>
-                                    {% if user.is_active %}Active{% else %}Locked out{% endif %}
+                                    {% if locked %}Locked{% else %}Active{% endif %}
                                 </td>
                             </tr>
                         </tbody>

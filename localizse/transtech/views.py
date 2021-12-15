@@ -1,6 +1,7 @@
 import json
 from random import choice
 from datetime import datetime, timedelta
+from uuid import uuid4
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -11,9 +12,27 @@ from django.http import JsonResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone
 
-from .models import Language, TechContent, TechContentVersion, User, Item, Report
+from .models import (
+    Language,
+    TechContent,
+    TechContentVersion,
+    User,
+    Item,
+    Report,
+    Message,
+)
 from .trnslt import tech_translate
+
+
+@login_required
+def accept(request, offer_id):
+    if offer_id != request.user.offer:
+        return HttpResponseRedirect(reverse("index"))
+    else:
+        request.user.groups.set([Group.objects.get(name="Auditor").pk])
+        return HttpResponseRedirect(reverse("account"))
 
 
 @login_required
@@ -48,6 +67,11 @@ def account(request):
             + weeks_items.filter(work_type="AU").count() * 0.1,
             "FY": FYs_items.filter(work_type="RE").count() * 0.15
             + FYs_items.filter(work_type="AU").count() * 0.1,
+            "locked": (timezone.now() - request.user.locked) < timedelta(days=7)
+            if request.user.locked
+            else False
+            if request.user.locked
+            else False,
         },
     )
 
@@ -57,11 +81,6 @@ def index(request):
         return render(request, "transtech/index.html")
     else:
         return HttpResponseRedirect(reverse("login"))
-
-
-@login_required
-def finance(request):
-    pass
 
 
 @login_required
@@ -104,7 +123,43 @@ def logout_view(request):
 
 @login_required
 def messages(request):
-    return render(request, "transtech/messages.html")
+    return render(
+        request,
+        "transtech/messages.html",
+        {"messages": request.user.messages.all().order_by("-sent_at")},
+    )
+
+
+@login_required
+def message(request, ID):
+    msg = Message.objects.get(pk=ID)
+    msg.read = True
+    msg.save()
+    return render(
+        request,
+        "transtech/message.html",
+        {
+            "message": msg,
+            "content": msg.content.replace("\n", "<br>"),
+        },
+    )
+
+
+@login_required
+def offer(request):
+    if request.user.is_staff and request.method == "POST":
+        data = json.loads(request.body)
+        user = User.objects.get(pk=data.get("user_id"))
+        user.offer = uuid4()
+        user.save()
+        Message.objects.create(
+            recipient=user,
+            subject="New Position Offer",
+            content=f'You have been doing some great work and we would like to offer you a higher position.\nIf you are interested follow <a href="/accept/{user.offer}">this link</a>.',
+        )
+        return JsonResponse({"message": "Offered"}, status=201)
+    else:
+        return JsonResponse({"error": "POST request required."}, status=400)
 
 
 def register(request):
@@ -285,6 +340,18 @@ def update(request):
 
 
 @login_required
+def users(request):
+    if request.user.is_staff:
+        return render(
+            request,
+            "transtech/users.html",
+            {"users": User.objects.filter(~Q(pk=request.user.pk))},
+        )
+    else:
+        return HttpResponseRedirect(reverse("index"))
+
+
+@login_required
 def work_switch(request):
     if request.user.is_staff:
         return HttpResponseRedirect(reverse("index"))
@@ -298,7 +365,14 @@ def work_switch(request):
 
 @login_required
 def work(request, w_type):
-
+    if (
+        (timezone.now() - request.user.locked) < timedelta(days=7)
+        if request.user.locked
+        else False
+    ):
+        return render(
+            request, "transtech/workerror.html", {"type": w_type, "locked": True}
+        )
     if w_type in [
         "create",
         "review",
@@ -315,6 +389,23 @@ def work(request, w_type):
         if w_type == "create":
             return render(request, f"transtech/{w_type}.html")
         else:
+            clicks = [
+                i.done
+                for i in request.user.items.filter(
+                    done__gt=timezone.now() - timedelta(days=7)
+                ).order_by("-done")[:10]
+            ]
+            diffs = [(clicks[t] - clicks[t - 1]) for t in range(len(clicks) - 1)]
+            if len([d for d in diffs if d < timedelta(seconds=3)]) > 2:
+                request.user.locked = timezone.now()
+                request.user.save()
+                Message.objects.create(
+                    recipient=request.user,
+                    subject="Account locked",
+                    content="We detected behaviour corresponding to fradulent activity. Your account has been locked for a week, please return then. Thank you.",
+                )
+                return HttpResponseRedirect(reverse("work"))
+            print(clicks)
             translations = [
                 c.content_id
                 for c in TechContentVersion.objects.filter(

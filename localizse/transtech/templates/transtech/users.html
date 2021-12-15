@@ -1,0 +1,23 @@
+{% extends "transtech/layout.html" %}
+{% load static %}
+{% block scripts %}
+<script src="{% static 'transtech/usr-scripts.js'%}"></script>
+{% endblock %}}
+{% block page %}
+<div class="container">
+    {% for user in users %}
+    <div class="row p-2 align-items-center">
+        <div class="col-auto">{{user.email}}</div>
+        <div class="col-auto"><button class="btn btn-primary offer-btn" data-id="{{user.pk}}"
+                {% if user.offer %}disabled{% endif %}>Offer</button></div>
+    </div>
+    {% endfor %}
+</div>
+<div class="modal" id="messageModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+        </div>
+    </div>
+</div>
+{% endblock %}
