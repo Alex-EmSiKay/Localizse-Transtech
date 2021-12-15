@@ -2,7 +2,33 @@
 {% block page %}
 <div class="container">
     <div class="row p-1">
-        <h4>TODO landing page</h4>
+        <div class=col>
+            <h4>Announcements</h4>
+            {% for a in announcements %}
+            <div class="row w-100">
+                <div class="col p-1 fw-bold border border-dark bg-warning">
+                    {{a|safe}}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
+    <div class="row p-1 mt-2">
+        <div class=col-auto>
+            <p>Welcome{% if new %} back{% endif %}, {{user.first_name}}!</p>
+        </div>
+    </div>
+    <p>This is Transtech, a Localizse application.</p>
+    <p>
+        This platform is directed toward efficiently translating short-form technical content.
+    </p>
+    <p>
+        In the menu you will find Account information, where you can start working, messages, and a way to select your
+        active languages.
+    </p>
+    <p>
+        Good luck and have fun!
+    </p>
+</div>
 </div>
 {% endblock %}

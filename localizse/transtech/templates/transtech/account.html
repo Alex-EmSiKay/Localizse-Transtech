@@ -134,7 +134,7 @@
     <div class="row p-1">
         <div class="col-auto">
             <p>{{num_flagged}} out of {{num_audits}} audited items were flagged.</p>
-            <p>This gives and accuracy rate of {{accuracy | stringformat:".2d"}}%</p>
+            <p>This gives and accuracy rate of {{accuracy | stringformat:".2d"}}%.</p>
             {% if accuracy >= 75 %}
             <p>Well done!</p>
             {% endif %}

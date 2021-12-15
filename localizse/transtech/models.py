@@ -91,7 +91,7 @@ class Report(models.Model):
 
 class Message(models.Model):
     recipient = models.ForeignKey(
-        User, null=True, on_delete=CASCADE, related_name="messages"
+        User, blank=True, null=True, on_delete=CASCADE, related_name="messages"
     )
     subject = models.CharField(max_length=64)
     content = models.TextField()

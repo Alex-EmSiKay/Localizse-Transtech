@@ -78,7 +78,18 @@ def account(request):
 
 def index(request):
     if request.user.is_authenticated:
-        return render(request, "transtech/index.html")
+        return render(
+            request,
+            "transtech/index.html",
+            {
+                "announcements": [
+                    m.content.replace("\n", "<br>")
+                    for m in Message.objects.filter(
+                        recipient=None, sent_at__gt=timezone.now() - timedelta(days=7)
+                    ).order_by("-sent_at")
+                ]
+            },
+        )
     else:
         return HttpResponseRedirect(reverse("login"))
 
@@ -108,7 +119,11 @@ def login_view(request):
                 set_langs(user)
             return HttpResponseRedirect(reverse("index"))
         else:
-            return render(request, "transtech/login.html")
+            return render(
+                request,
+                "transtech/login.html",
+                {"error": "Please check your email and password", "email": email},
+            )
     else:
         if request.user.is_authenticated:
             return HttpResponseRedirect(reverse("index"))
@@ -126,7 +141,10 @@ def messages(request):
     return render(
         request,
         "transtech/messages.html",
-        {"messages": request.user.messages.all().order_by("-sent_at")},
+        {
+            "messages": request.user.messages.all().order_by("-sent_at"),
+            "new": timezone.now() - request.user.date_joined < timedelta(days=1),
+        },
     )
 
 
@@ -155,7 +173,7 @@ def offer(request):
         Message.objects.create(
             recipient=user,
             subject="New Position Offer",
-            content=f'You have been doing some great work and we would like to offer you a higher position.\nIf you are interested follow <a href="/accept/{user.offer}">this link</a>.',
+            content=f'Congratulations! You have been doing some great work and we would like to offer you a higher position.\nYou have the oppurtunity to become an Auditor. Auditors spot check the quality of the review work to make sure we maintain high standards of accuracy.\nYou only recieve 10c for each item you audit but you can audit much more in the same amount of time.\nIf you are interested follow <a href="/accept/{user.offer}">this link to accept the offer.</a>.',
         )
         return JsonResponse({"message": "Offered"}, status=201)
     else:
@@ -203,6 +221,11 @@ def register(request):
         user.groups.add(Group.objects.get(name="Reviewer"))
         login(request, user)
         set_langs(user)
+        Message.objects.create(
+            recipient=user,
+            subject="Welcome!",
+            content="Welcome to Transtech. Here's some info to get you started.\n*Some onboarding stuff*",
+        )
         return HttpResponseRedirect(reverse("index"))
     else:
         if request.user.is_authenticated:

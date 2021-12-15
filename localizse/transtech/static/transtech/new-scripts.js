@@ -14,10 +14,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     { left: '$', right: '$', display: false },
                 ],
                 // • rendering keys, e.g.:
-                throwOnError: true,
+                throwOnError: false,
             });
         } else {
             render_field.innerText = 'Rendered content will appear here';
+        }
+        if (
+            (input_field.innerText.match(/(?<!\\)\$/g) || []).length % 2 ||
+            render_field.querySelectorAll(
+                'span[style="color: rgb(204, 0, 0);"]'
+            ).length > 0 ||
+            render_field.innerText.match(/\$\$/)
+        ) {
+            save_btn.disabled = true;
+        } else {
+            save_btn.disabled = false;
         }
     });
     input_field.dispatchEvent(new Event('input'));

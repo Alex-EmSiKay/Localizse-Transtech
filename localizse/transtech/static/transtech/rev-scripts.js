@@ -39,24 +39,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     input_field.addEventListener('input', (e) => {
         render_field.innerHTML = e.currentTarget.innerHTML;
+        var incomplete = false;
         editor.querySelectorAll('.entry').forEach((e, i) => {
-            const index_match = new RegExp(`~${i + 1}~`);
+            const index_match = new RegExp(`~${i + 1}~`, 'g');
+            incomplete = incomplete
+                ? true
+                : (input_field.innerText.match(index_match) || []).length !== 1;
             while (index_match.test(render_field.innerHTML)) {
                 render_field.innerHTML = render_field.innerHTML.replace(
                     `~${i + 1}~`,
                     document.querySelector(`#exp${i + 1}`).outerHTML
                 );
             }
+            document.querySelector('.save-btn').disabled =
+                incomplete || /~/.test(render_field.innerText) ? true : false;
         });
-        // renderMathInElement(render_field, {
-        //     // customised options
-        //     // • auto-render specific keys, e.g.:
-        //     delimiters: [
-        //         { left: '~', right: '~', display: false },
-        //     ],
-        //     // • rendering keys, e.g.:
-        //     throwOnError: false
-        // });
     });
     input_field.dispatchEvent(new Event('input'));
 
