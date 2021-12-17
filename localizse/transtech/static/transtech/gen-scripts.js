@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    //disabling selected options to avoid selections in both active and secondary.
     const selectors = document.querySelectorAll('.lang-select select');
     if (selectors.length > 1) {
         const opts = selectors[1].querySelectorAll('option');
@@ -14,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
+        // makes the save button appear when selection changes.
         selectors[0].dispatchEvent(new Event('change'));
         selectors.forEach((selector) => {
             selector.addEventListener('change', () => {

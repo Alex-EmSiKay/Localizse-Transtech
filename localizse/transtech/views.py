@@ -25,7 +25,7 @@ from .models import (
 )
 from .trnslt import tech_translate
 
-
+# takes an 'offer' and accepts it if it's valid
 @login_required
 def accept(request, offer_id):
     if offer_id != request.user.offer:
@@ -115,6 +115,7 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
+            # makes sure that active languages are set.
             if not user.active_pri:
                 set_langs(user)
             return HttpResponseRedirect(reverse("index"))
@@ -158,7 +159,9 @@ def message(request, ID):
         "transtech/message.html",
         {
             "message": msg,
-            "content": msg.content.replace("\n", "<br>"),
+            "content": msg.content.replace(
+                "\n", "<br>"
+            ),  # this processing allows links and newlines to appear in the modal
         },
     )
 
@@ -168,11 +171,13 @@ def offer(request):
     if request.user.is_staff and request.method == "POST":
         data = json.loads(request.body)
         user = User.objects.get(pk=data.get("user_id"))
+        # generating a key allow user to accept and offer
         user.offer = uuid4()
         user.save()
         Message.objects.create(
             recipient=user,
             subject="New Position Offer",
+            # message includes a link with the unique offer key
             content=f'Congratulations! You have been doing some great work and we would like to offer you a higher position.\nYou have the oppurtunity to become an Auditor. Auditors spot check the quality of the review work to make sure we maintain high standards of accuracy.\nYou only recieve 10c for each item you audit but you can audit much more in the same amount of time.\nIf you are interested follow <a href="/accept/{user.offer}">this link to accept the offer.</a>.',
         )
         return JsonResponse({"message": "Offered"}, status=201)
@@ -267,6 +272,7 @@ def save(request):
     if lang not in choices:
         return JsonResponse({"error": "not a valid language"}, status=400)
     cont = data.get("content")
+    # logic to decide if this is a review, new content or a quick edit
     if data.get("content_id"):
         p_key = data.get("content_id")
         oldTC = TechContent.objects.get(pk=p_key)
@@ -276,12 +282,14 @@ def save(request):
         oldOriginal.content = cont
         oldOriginal.save()
         if oldOriginal.version_type == "OR":
+            # runs translation on other languages again
             for tr_lang in [c for c in choices if c != lang]:
                 oldTranslation = TechContentVersion.objects.get(
                     content_id=oldTC, language=Language.objects.get(code=tr_lang)
                 )
                 oldTranslation.content = tech_translate(lang, tr_lang, cont)
                 oldTranslation.save()
+        # create a new work item reflecting the work that has just been submitted
         if data.get("type"):
             if oldOriginal.status == "R":
                 Item.objects.create(
@@ -303,7 +311,7 @@ def save(request):
                 )
                 oldOriginal.status = "R"
                 oldOriginal.save()
-
+    # generating a new original and translations.
     else:
         newTC = TechContent.objects.create()
         p_key = newTC.pk
@@ -346,6 +354,7 @@ def update(request):
     if request.method != "POST":
         return JsonResponse({"error": "POST request required."}, status=400)
     data = json.loads(request.body)
+    # adapts to the type of info supplied in the post and updates accordingly
     for field, val in data.get("info").items():
         if field == "primary":
             request.user.primary.set(
@@ -375,6 +384,7 @@ def users(request):
 
 
 @login_required
+# directs the user to the work view which corresponds to their position
 def work_switch(request):
     if request.user.is_staff:
         return HttpResponseRedirect(reverse("index"))
@@ -401,6 +411,7 @@ def work(request, w_type):
         "review",
         "audit",
     ]:
+        # avoids users from 'hacking' into another work url
         if not request.user.is_staff:
             group = request.user.groups.all()[0]
             if not (
@@ -412,6 +423,9 @@ def work(request, w_type):
         if w_type == "create":
             return render(request, f"transtech/{w_type}.html")
         else:
+            # Decides if the user is 'cheating' by checking how quickly they are submitting work items.
+            # The current pattern is 3 or more items submitted less than 3 secs apart in the last 9 items.
+            # It also ignores items more than a week old to avoid the user being locked out after lock is lifted.
             clicks = [
                 i.done
                 for i in request.user.items.filter(
@@ -428,7 +442,7 @@ def work(request, w_type):
                     content="We detected behaviour corresponding to fradulent activity. Your account has been locked for a week, please return then. Thank you.",
                 )
                 return HttpResponseRedirect(reverse("work"))
-            print(clicks)
+            # logic for choosing a piece of content based on the users active languages
             translations = [
                 c.content_id
                 for c in TechContentVersion.objects.filter(
@@ -469,6 +483,7 @@ def work(request, w_type):
         return HttpResponseRedirect(reverse("index"))
 
 
+# automatically sets active languages.
 def set_langs(user):
     user.active_pri = user.primary.all()[0]
     user.active_sec = [

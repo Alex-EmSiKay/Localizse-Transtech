@@ -2,6 +2,7 @@ import re
 from uuid import uuid4
 
 
+# standard Google Translate API Basic function
 def translate(source, target, text):
     """Translates text into the target language.
 
@@ -27,14 +28,17 @@ def translate(source, target, text):
     return result["translatedText"]
 
 
+# a version of the translation to deal with tech content
 def tech_translate(source, target, text):
     factored = text
+    # replaces the latex with uuid and records the mapping
     snip_map = [
         (m, str(uuid4())) for m in set(re.findall(r"\${1,2}.+?\${1,2}", factored))
     ]
 
     for snip in snip_map:
         factored = factored.replace(snip[0], snip[1])
+    # translating with the uuids included, then replacing the latex back in.
     translated = translate(source, target, factored)
     for snip in snip_map:
         translated = translated.replace(snip[1], snip[0])

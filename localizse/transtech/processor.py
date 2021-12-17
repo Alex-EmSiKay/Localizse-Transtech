@@ -1,3 +1,4 @@
+# a context proccessor to show a badge if the user has unread messages.
 def add_badge(request):
     context = {
         "show_badge": request.user.messages.filter(read=False).count()

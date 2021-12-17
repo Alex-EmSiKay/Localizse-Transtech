@@ -17,13 +17,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST',
                     headers: { 'X-CSRFToken': csrftoken },
                     body: JSON.stringify({
+                        // correctly treating the different personal info edits
                         info:
                             form.querySelectorAll('input').length > 0
-                                ? [...form.querySelectorAll('input')].reduce(
+                                ? // parsing out the fields to an JSON fields
+                                  [...form.querySelectorAll('input')].reduce(
                                       (a, v) => ({ ...a, [v.name]: v.value }),
                                       {}
                                   )
                                 : form.querySelectorAll('select').length > 0 &&
+                                  //parsing out the multiple selects to the correct fields as arrays
                                   [...form.querySelectorAll('select')].reduce(
                                       (a, v) => ({
                                           ...a,
@@ -68,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
     );
+    //disabling selected options to avoid selections in both active and secondary.
     const fselectors = document.querySelectorAll('.lang-update');
     const opts = fselectors[1].querySelectorAll('option');
     fselectors[0].addEventListener('change', () => {

@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const render_field = editor.querySelector('.render');
     var exps = input_field.innerText;
     trans_exps = [...exps.matchAll(/\$+.*?\$+/g)];
+    //runs KaTeX to render the maths info/original content.
     renderMathInElement(editor.querySelector('.info'), {
         // customised options
         // • auto-render specific keys, e.g.:
@@ -16,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // • rendering keys, e.g.:
         throwOnError: false,
     });
+    // pulling the new katex elements in the info and formatting them
+    // into the expressions sections
     const exp_field = editor.querySelector('.expressions');
     editor.querySelectorAll('.katex').forEach((entry, i) => {
         var line = document.createElement('li');
@@ -30,16 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
         new_entry.id = `exp${i + 1}`;
         exp_field.querySelector(`#entry${i + 1}`).appendChild(new_entry);
     });
+    //updating the input field with the expression 'tags'.
     let i = 1;
     while (/\$+.*?\$+/.test(exps)) {
         exps = exps.replace(/\$+.*?\$+/, `~${i}~`);
         i++;
     }
     input_field.innerText = exps.trim();
-
+    // takes the current input and renders the math based on the position of the tags
     input_field.addEventListener('input', (e) => {
         render_field.innerHTML = e.currentTarget.innerHTML;
         var incomplete = false;
+        // input control to make sure all the tags are represented correctly.
         editor.querySelectorAll('.entry').forEach((e, i) => {
             const index_match = new RegExp(`~${i + 1}~`, 'g');
             incomplete = incomplete

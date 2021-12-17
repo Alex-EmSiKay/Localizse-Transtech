@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.querySelector('form').addEventListener('submit', (e) => {
         e.preventDefault();
+        //input control to make sure the correct amount of languages are picked
         if (
             [...selectors[0].options].filter((l) => l.selected).length < 1 ||
             [...selectors[0].options].filter((l) => l.selected).length +

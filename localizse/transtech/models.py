@@ -22,13 +22,16 @@ class User(AbstractUser):
     secondary = models.ManyToManyField(
         Language, blank=True, related_name="secondary_users"
     )
+    # determines the languages displayed in the work view
     active_pri = models.ForeignKey(
         Language, null=True, on_delete=SET_NULL, related_name="primary_users_active"
     )
+    # ditto
     active_sec = models.ForeignKey(
         Language, null=True, on_delete=SET_NULL, related_name="secondary_users_active"
     )
     locked = models.DateTimeField(blank=True, null=True)
+    # a key to make sure users can't upgrade randomly
     offer = models.UUIDField(blank=True, null=True)
 
 
@@ -37,12 +40,6 @@ class TechContent(models.Model):
 
 
 class TechContentVersion(models.Model):
-    LANGS = (
-        ("en", "English"),
-        ("fr", "French"),
-        ("pt", "Portuguese"),
-        ("zh", "Chinese"),
-    )
     V_TYPES = (
         ("OR", "Original"),
         ("TR", "Translation"),
@@ -74,8 +71,8 @@ class Item(models.Model):
     content = models.ForeignKey(
         TechContentVersion, null=True, on_delete=SET_NULL, related_name="reviews"
     )
-    initial = models.TextField()
-    final = models.TextField()
+    initial = models.TextField()  # these are used to
+    final = models.TextField()  # check accuracy
     work_type = models.CharField(max_length=2, choices=WORK_TYPES)
     done = models.DateTimeField(default=timezone.now)
 

@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // draws info into the modal to display full message.
     document.querySelectorAll('.btn-link').forEach((btn) => {
         btn.addEventListener('click', (e) => {
             e.target.className = 'btn btn-link link-primary';
