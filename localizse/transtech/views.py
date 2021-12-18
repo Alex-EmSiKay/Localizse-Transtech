@@ -285,9 +285,9 @@ def save(request):
             # runs translation on other languages again
             for tr_lang in [c for c in choices if c != lang]:
                 oldTranslation = TechContentVersion.objects.get(
-                    content_id=oldTC, language=Language.objects.get(code=tr_lang)
+                    content_id=oldTC, language=Language.objects.get(code=tr_lang.code)
                 )
-                oldTranslation.content = tech_translate(lang, tr_lang, cont)
+                oldTranslation.content = tech_translate(lang.code, tr_lang.code, cont)
                 oldTranslation.save()
         # create a new work item reflecting the work that has just been submitted
         if data.get("type"):
