@@ -38,8 +38,6 @@ Onboarding requires correctly registering the new user with relevant information
 
 ## Files by folder
 
-Paths are relative to the 'localizse' Django project folder.
-
 **db.sqlite3**
 : the database file
 
@@ -95,7 +93,7 @@ Paths are relative to the 'localizse' Django project folder.
 -   index() - returns the _landing_ page, or the login page if the user is not authenticated.
 -   log() - passes the information for the full work log to the _work log_ page.
 -   login_view() - Where the user can login
--   logout_view() - the user is logged out and sent to the _login_ page.
+-   logout*view() - the user is logged out and sent to the \_login* page.
 -   messages() - Where the user can view their messages.
 -   message() - is called from the _messages_ page to get the content for the message modal.
 -   offer() - handles a POST to update the offer field of a user and send them an offer message.
